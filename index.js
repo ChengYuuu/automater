@@ -5,5 +5,5 @@ const singleBlock = require('./singleBlock');
   await singleBlock.initialize();
   await singleBlock.page.waitFor(1000);
   await singleBlock.run();
-  await singleBlock.block('81', 'remarks');
+  await singleBlock.block('6', 'remarks');
 })();

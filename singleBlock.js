@@ -1,6 +1,6 @@
 const puppeteer = require('puppeteer');
 
-const BASE_URL = "http://localhost:3000/singleblock"
+const BASE_URL = "http://localhost:3000"
 
 const singleBlock = {
   browser: null,
@@ -12,6 +12,9 @@ const singleBlock = {
   },
   run: async() => {
     await singleBlock.page.goto(BASE_URL, { waitUntil: 'networkidle0' });
+    let singleBlockLink = await singleBlock.page.$('a[id=singleBlock]');
+    await singleBlockLink.click();
+    await singleBlock.page.waitFor('input[id=general-input');
     await singleBlock.page.type('input[id=general-input', '3');
     await singleBlock.page.keyboard.press('Enter');
   },
@@ -24,30 +27,60 @@ const singleBlock = {
     const currentBlockCodes = [];
     await singleBlock.page.waitFor('span[id=posting-restrict-group]');
     let postingRestrictContainer = await singleBlock.page.$$('span[id=posting-restrict-group]');
-    let addPostingRestrictButton = await postingRestrictContainer[0].$('button[id=plus]');
-    await addPostingRestrictButton.click();
     for (let i = 0; i < postingRestrictContainer.length; i++) {
       let postingRestrictTextBox = await postingRestrictContainer[i].$('input[id=posting-restrict-value]');
-      currentBlockCodes.push(await singleBlock.page.evaluate(x => x.value, postingRestrictTextBox));
+      currentBlockCodes.push(parseInt(await singleBlock.page.evaluate(x => x.value, postingRestrictTextBox)));
     }
-    let updatedPostingRestrictContainer = await singleBlock.page.$$('span[id=posting-restrict-group]');
-    for (let i = 1; i < updatedPostingRestrictContainer.length; i++) {
-      let updatedPostingRestrictTextBox = await updatedPostingRestrictContainer[i].$('input[id=posting-restrict-value]');
-      await updatedPostingRestrictTextBox.click({ clickCount: 3 })
-      await updatedPostingRestrictTextBox.press('Backspace');  
-      let code = currentBlockCodes[i-1];
-      await updatedPostingRestrictTextBox.type(code);
+    if (currentBlockCodes.includes('81')) return;
+    if (blockCode === '81' || currentBlockCodes.length === 0) {
+      await singleBlock.addBlockCodeBelow(blockCode);
+      await singleBlock.removeAllBlockCodeExceptLast();
+    } else {
+      currentBlockCodes.push(parseInt(blockCode));
+      await singleBlock.page.waitFor(100);
+      var unique = currentBlockCodes.filter(function(elem, index, self) {
+        return index === self.indexOf(elem);
+      })
+      await singleBlock.page.waitFor(200);
+      unique.sort((a,b) => a-b);
+      await singleBlock.page.waitFor(300);
+      console.log(unique.sort((a,b) => a-b));
+      console.log(currentBlockCodes);
+      console.log(currentBlockCodes.length - 1);
+      for (let i = 0; i < unique.length; i++) {
+        await singleBlock.addBlockCodeBelow((unique[i]).toString());
+      }
+      await singleBlock.removeBlockCode(currentBlockCodes.length - 1);
     }
-    let updatedFirstPostingRestrictContainer = await singleBlock.page.$$('span[id=posting-restrict-group]')
-    let updatedFirstPostingRestrictTextBox = await updatedFirstPostingRestrictContainer[0].$('input[id=posting-restrict-value]');
-    await updatedFirstPostingRestrictTextBox.click({ clickCount: 3 })
-    await updatedFirstPostingRestrictTextBox.press('Backspace');
-    await updatedFirstPostingRestrictTextBox.type(blockCode);
-
   },
   blockRemark: async(remarks) => {
-    const currentRemarks = [];
     await singleBlock.page.waitFor('span[id=remark-group]');
+    await singleBlock.moveRemarkDownAndAddTop(remarks);
+  },
+  addBlockCodeBelow: async (blockCode) => {
+    let postingRestrictContainer = await singleBlock.page.$$('span[id=posting-restrict-group]');
+    let addPostingRestrictButton = await postingRestrictContainer[0].$('button[id=plus]');
+    await addPostingRestrictButton.click();
+    let updatedPostingRestrictContainer = await singleBlock.page.$$('span[id=posting-restrict-group]');
+    let updatedPostingRestrictTextBox = await updatedPostingRestrictContainer[updatedPostingRestrictContainer.length - 1].$('input[id=posting-restrict-value]');
+    await updatedPostingRestrictTextBox.type(blockCode);
+  },
+  removeAllBlockCodeExceptLast: async () => {
+    let postingRestrictContainer = await singleBlock.page.$$('span[id=posting-restrict-group]');
+    for (let i = 0; i < postingRestrictContainer.length -1; i++) {
+      let removePostingRestrictButton = await postingRestrictContainer[0].$('button[id=minus]');
+      await removePostingRestrictButton.click();
+    }
+  },
+  removeBlockCode: async (amountToRemove) => {
+    for (let i = 0; i < amountToRemove; i++) {
+      let postingRestrictContainer = await singleBlock.page.$$('span[id=posting-restrict-group]');
+      let removePostingRestrictButton = await postingRestrictContainer[0].$('button[id=minus]');
+      await removePostingRestrictButton.click();
+    }
+  },
+  moveRemarkDownAndAddTop: async(remarks) => {
+    const currentRemarks = [];
     let remarkContainer = await singleBlock.page.$$('span[id=remark-group]');
     let addRemarkButton = await remarkContainer[0].$('button[id=plus]');
     await addRemarkButton.click();
@@ -69,8 +102,13 @@ const singleBlock = {
     await updatedFirstRemarkTextBox.press('Backspace');
     await updatedFirstRemarkTextBox.type(remarks);
   },
-  blockEightyOne: async () => {
-
+  addRemarkBelow: async (remarks) => {
+    let remarkContainer = await singleBlock.page.$$('span[id=remark-group]');
+    let addRemarkButton = await remarkContainer[0].$('button[id=plus]');
+    await addRemarkButton.click();
+    let updatedRemarkContainer = await singleBlock.page.$$('span[id=remark-group]');
+    let updatedRemarkTextBox = await updatedRemarkContainer[updatedRemarkContainer.length - 1].$('textarea[id=remark-value]');
+    await updatedRemarkTextBox.type(remarks);
   }
 }
 
