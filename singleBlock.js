@@ -7,21 +7,25 @@ const singleBlock = {
   page: null,
 
   initialize: async () => {
-    singleBlock.browser = await puppeteer.launch({ headless: false });
+    singleBlock.browser = await puppeteer.launch({ headless: false, defaultViewport: null, args:['--start-maximized'] });
     singleBlock.page = await singleBlock.browser.newPage();
   },
   run: async() => {
     await singleBlock.page.goto(BASE_URL, { waitUntil: 'networkidle0' });
+  },
+  block: async(blockCode, remarks, portfolioNumber) => {
+    await singleBlock.page.waitFor('a[id=singleBlock]');
     let singleBlockLink = await singleBlock.page.$('a[id=singleBlock]');
     await singleBlockLink.click();
     await singleBlock.page.waitFor('input[id=general-input');
-    await singleBlock.page.type('input[id=general-input', '3');
+    await singleBlock.page.type('input[id=general-input', portfolioNumber);
     await singleBlock.page.keyboard.press('Enter');
-  },
-  block: async(blockCode, remarks) => {
-
     await singleBlock.blockRestrict(blockCode);
     await singleBlock.blockRemark(remarks);
+    let submitButton = await singleBlock.page.$('button[id=submit]');
+    await submitButton.click();
+    await singleBlock.page.waitFor(1000);
+    await singleBlock.goBackHome();
   },
   blockRestrict: async(blockCode) => {
     const currentBlockCodes = [];
@@ -37,16 +41,11 @@ const singleBlock = {
       await singleBlock.removeAllBlockCodeExceptLast();
     } else {
       currentBlockCodes.push(parseInt(blockCode));
-      await singleBlock.page.waitFor(100);
       var unique = currentBlockCodes.filter(function(elem, index, self) {
         return index === self.indexOf(elem);
       })
-      await singleBlock.page.waitFor(200);
       unique.sort((a,b) => a-b);
-      await singleBlock.page.waitFor(300);
-      console.log(unique.sort((a,b) => a-b));
-      console.log(currentBlockCodes);
-      console.log(currentBlockCodes.length - 1);
+      console.log(unique);
       for (let i = 0; i < unique.length; i++) {
         await singleBlock.addBlockCodeBelow((unique[i]).toString());
       }
@@ -63,7 +62,7 @@ const singleBlock = {
     await addPostingRestrictButton.click();
     let updatedPostingRestrictContainer = await singleBlock.page.$$('span[id=posting-restrict-group]');
     let updatedPostingRestrictTextBox = await updatedPostingRestrictContainer[updatedPostingRestrictContainer.length - 1].$('input[id=posting-restrict-value]');
-    await updatedPostingRestrictTextBox.type(blockCode);
+    await updatedPostingRestrictTextBox.type(blockCode, { delay : 200});
   },
   removeAllBlockCodeExceptLast: async () => {
     let postingRestrictContainer = await singleBlock.page.$$('span[id=posting-restrict-group]');
@@ -109,6 +108,10 @@ const singleBlock = {
     let updatedRemarkContainer = await singleBlock.page.$$('span[id=remark-group]');
     let updatedRemarkTextBox = await updatedRemarkContainer[updatedRemarkContainer.length - 1].$('textarea[id=remark-value]');
     await updatedRemarkTextBox.type(remarks);
+  },
+  goBackHome: async () => {
+    let homeLink = await singleBlock.page.$('a[id=home]');
+    await homeLink.click()
   }
 }
 
