@@ -13,7 +13,7 @@ const singleBlock = {
   run: async() => {
     await singleBlock.page.goto(BASE_URL, { waitUntil: 'networkidle0' });
   },
-  block: async(blockCode, remarks, portfolioNumber) => {
+  block: async(blockCodes, remarks, portfolioNumber) => {
     await singleBlock.page.waitFor('a[id=singleBlock]');
     let singleBlockLink = await singleBlock.page.$('a[id=singleBlock]');
     await singleBlockLink.click();
@@ -21,34 +21,35 @@ const singleBlock = {
     await singleBlock.page.type('input[id=general-input', portfolioNumber);
     await singleBlock.page.keyboard.press('Enter');
 
-    for (i = 0; i < blockCode.length ;i++){
-      console.log(blockCode[i]);
-      await singleBlock.blockRestrict(blockCode[i]);
-    }
+    // await singleBlock.blockRestrict(blockCodes);
+    await singleBlock.blockRemark(remarks);
+    // for (i = 0; i < blockCode.length ;i++){
+    //   await singleBlock.blockRemark(remarks[i]);
+    // }
 
-    for (i = 0; i < blockCode.length ;i++){
-      await singleBlock.blockRemark(remarks[i]);
-    }
-
-    let submitButton = await singleBlock.page.$('button[id=submit]');
-    await submitButton.click();
-    await singleBlock.page.waitFor(1000);
-    await singleBlock.goBackHome();
+    // let submitButton = await singleBlock.page.$('button[id=submit]');
+    // await submitButton.click();
+    // await singleBlock.page.waitFor(1000);
+    // await singleBlock.goBackHome();
   },
-  blockRestrict: async(blockCode) => {
+  blockRestrict: async(blockCodes) => {
     const currentBlockCodes = [];
+    var initialBlockLength = 0;
     await singleBlock.page.waitFor('span[id=posting-restrict-group]');
     let postingRestrictContainer = await singleBlock.page.$$('span[id=posting-restrict-group]');
     for (let i = 0; i < postingRestrictContainer.length; i++) {
       let postingRestrictTextBox = await postingRestrictContainer[i].$('input[id=posting-restrict-value]');
       currentBlockCodes.push(parseInt(await singleBlock.page.evaluate(x => x.value, postingRestrictTextBox)));
+      initialBlockLength += 1;
     }
     if (currentBlockCodes.includes('81')) return;
-    if (blockCode === '81' || currentBlockCodes.length === 0) {
-      await singleBlock.addBlockCodeBelow(blockCode);
+    if (blockCodes.includes('81')) {
+      await singleBlock.addBlockCodeBelow('81');
       await singleBlock.removeAllBlockCodeExceptLast();
     } else {
-      currentBlockCodes.push(parseInt(blockCode));
+      for (let i = 0; i < blockCodes.length; i++) {
+        currentBlockCodes.push(parseInt(blockCodes[i]));
+      }
       var unique = currentBlockCodes.filter(function(elem, index, self) {
         return index === self.indexOf(elem);
       })
@@ -57,7 +58,7 @@ const singleBlock = {
       for (let i = 0; i < unique.length; i++) {
         await singleBlock.addBlockCodeBelow((unique[i]).toString());
       }
-      await singleBlock.removeBlockCode(currentBlockCodes.length - 1);
+      await singleBlock.removeBlockCode(initialBlockLength);
     }
   },
   blockRemark: async(remarks) => {
@@ -90,24 +91,25 @@ const singleBlock = {
     const currentRemarks = [];
     let remarkContainer = await singleBlock.page.$$('span[id=remark-group]');
     let addRemarkButton = await remarkContainer[0].$('button[id=plus]');
-    await addRemarkButton.click();
+    for (let i = 0; i < remarks.length; i++) {
+      await addRemarkButton.click();
+    }
     for (let i = 0; i < remarkContainer.length; i++) {
       let remarkTextBox = await remarkContainer[i].$('textarea[id=remark-value]');
       currentRemarks.push(await singleBlock.page.evaluate(x => x.value, remarkTextBox));
     }
+    for (let i = remarks.length - 1; i >= 0; i--) {
+      currentRemarks.unshift(remarks[i]);
+    }
+    console.log(currentRemarks);
     let updatedRemarkContainer = await singleBlock.page.$$('span[id=remark-group]');
-    for (let i = 1; i < updatedRemarkContainer.length; i++) {
+    for (let i = 0; i < updatedRemarkContainer.length; i++) {
       let updatedRemarkTextBox = await updatedRemarkContainer[i].$('textarea[id=remark-value]');
-      await updatedRemarkTextBox.click({ clickCount: 3 })
+      await updatedRemarkTextBox.click({ clickCount: 3 });
       await updatedRemarkTextBox.press('Backspace');
-      let rm = currentRemarks[i-1];
+      let rm = currentRemarks[i];
       await updatedRemarkTextBox.type(rm);
     }
-    let updatedFirstRemarkContainer = await singleBlock.page.$$('span[id=remark-group]')
-    let updatedFirstRemarkTextBox = await updatedFirstRemarkContainer[0].$('textarea[id=remark-value]');
-    await updatedFirstRemarkTextBox.click({ clickCount: 3 })
-    await updatedFirstRemarkTextBox.press('Backspace');
-    await updatedFirstRemarkTextBox.type(remarks);
   },
   addRemarkBelow: async (remarks) => {
     let remarkContainer = await singleBlock.page.$$('span[id=remark-group]');
