@@ -46,6 +46,13 @@ const singleBlock = {
 
     await singleBlock.selectReviewDate();
 
+    if(blockCodes.includes('81')){
+      singleBlock.selectDormantDate();
+      var dormantBlock = "Yes";
+    } else {
+      var dormantBlock = "No";
+    }
+
     let submitButton = await singleBlock.page.$('button[id=submit]');
     await submitButton.click();
 
@@ -179,6 +186,18 @@ const singleBlock = {
       }
     }
   },
+  selectDormantDate: async () => {
+    let reviewDatePicker = await singleBlock.page.$('input[id=dormant-datepicker');
+    await reviewDatePicker.click();
+    await singleBlock.page.waitFor(1000);
+    let dates = await singleBlock.page.$$('table[class=ant-picker-content] td.ant-picker-cell.ant-picker-cell-in-view');
+    for (let i = 0; i < dates.length; i++) {
+      let day = await dates[i].evaluate(el => el.innerText);
+      if (day == "8") {
+        singleBlock.page.evaluate(el => el.click(), dates[i])
+      }
+    }
+  }
 }
 
 module.exports = singleBlock;
