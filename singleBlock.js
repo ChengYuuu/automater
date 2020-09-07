@@ -29,11 +29,6 @@ const singleBlock = {
     await singleBlock.page.goto(BASE_URL, { waitUntil: 'networkidle0' });
   },
   block: async(blockCodes, remarks, portfolioNumber) => {
-    if(blockCodes.includes('81')){
-      var dormantBlock = "Yes";
-    } else {
-      var dormantBlock = "No";
-    }
     await singleBlock.page.waitFor('a[id=singleBlock]');
     let singleBlockLink = await singleBlock.page.$('a[id=singleBlock]');
     await singleBlockLink.click();
@@ -52,6 +47,8 @@ const singleBlock = {
     } else {
       var dormantBlock = "No";
     }
+
+    console.log(dormantBlock);
 
     let submitButton = await singleBlock.page.$('button[id=submit]');
     await submitButton.click();
@@ -76,8 +73,6 @@ const singleBlock = {
       currentBlockCodes.push(parseInt(await singleBlock.page.evaluate(x => x.value, postingRestrictTextBox)));
     }
 
-    console.log(currentBlockCodes);
-
     if (currentBlockCodes.length > 0){
       var existingBlock = "Yes";
     } else {
@@ -91,15 +86,18 @@ const singleBlock = {
       for (let i = 0; i < blockCodes.length; i++) {
         currentBlockCodes.push(parseInt(blockCodes[i]));
       }
+      var temp = currentBlockCodes.map(x => x);
+      console.log(temp);
       var unique = currentBlockCodes.filter(function(elem, index, self) {
         return index === self.indexOf(elem);
       })
       console.log(unique);
+      console.log(temp.length - blockCodes.length);
       unique.sort((a,b) => a-b);
       for (let i = 0; i < unique.length; i++) {
         await singleBlock.addBlockCodeBelow((unique[i]).toString());
       }
-      await singleBlock.removeBlockCode(currentBlockCodes.length - blockCodes.length);
+      await singleBlock.removeBlockCode(temp.length - blockCodes.length);
     }
 
     return existingBlock;
@@ -145,7 +143,6 @@ const singleBlock = {
     for (let i = remarks.length - 1; i >= 0; i--) {
       currentRemarks.unshift(remarks[i]);
     }
-    console.log(currentRemarks);
     let updatedRemarkContainer = await singleBlock.page.$$('span[id=remark-group]');
     for (let i = 0; i < updatedRemarkContainer.length; i++) {
       let updatedRemarkTextBox = await updatedRemarkContainer[i].$('textarea[id=remark-value]');
