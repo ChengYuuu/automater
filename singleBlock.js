@@ -97,7 +97,7 @@ const singleBlock = {
       for (let i = 0; i < unique.length; i++) {
         await singleBlock.addBlockCodeBelow((unique[i]).toString());
       }
-      await singleBlock.removeBlockCode(blockCodes.length);
+      await singleBlock.removeBlockCode(unique.length);
     }
 
     return existingBlock;
