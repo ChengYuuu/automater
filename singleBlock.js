@@ -79,7 +79,7 @@ const singleBlock = {
     } else {
       var existingBlock = "No";
     }
-    if (currentBlockCodes.includes('81')) return existingBlock;
+    if (currentBlockCodes.includes(81)) return "Yes";
     if (blockCodes.includes('81')) {
       await singleBlock.addBlockCodeBelow('81');
       await singleBlock.removeAllBlockCodeExceptLast();
@@ -97,7 +97,7 @@ const singleBlock = {
       for (let i = 0; i < unique.length; i++) {
         await singleBlock.addBlockCodeBelow((unique[i]).toString());
       }
-      await singleBlock.removeBlockCode(blockCodes.length);
+      await singleBlock.removeBlockCode(unique.length);
     }
 
     return existingBlock;
