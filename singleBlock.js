@@ -43,6 +43,9 @@ const singleBlock = {
 
     var existingBlock = await singleBlock.blockRestrict(blockCodes);
     await singleBlock.blockRemark(remarks);
+
+    await singleBlock.selectReviewDate();
+
     let submitButton = await singleBlock.page.$('button[id=submit]');
     await submitButton.click();
 
@@ -163,7 +166,19 @@ const singleBlock = {
   goBackHome: async () => {
     let homeLink = await singleBlock.page.$('a[id=home]');
     await homeLink.click()
-  }
+  },
+  selectReviewDate: async () => {
+    let reviewDatePicker = await singleBlock.page.$('input[id=review-datepicker');
+    await reviewDatePicker.click();
+    await singleBlock.page.waitFor(1000);
+    let dates = await singleBlock.page.$$('table[class=ant-picker-content] td.ant-picker-cell.ant-picker-cell-in-view');
+    for (let i = 0; i < dates.length; i++) {
+      let day = await dates[i].evaluate(el => el.innerText);
+      if (day == "8") {
+        singleBlock.page.evaluate(el => el.click(), dates[i])
+      }
+    }
+  },
 }
 
 module.exports = singleBlock;
