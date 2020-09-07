@@ -7,6 +7,9 @@ const reason_split_array = [];
 const code_split_array = [];
 const portfolioNumber_array = [];
 
+
+
+var success = true;
 fs.createReadStream('./input/account_reason.csv')
   .pipe(csv({ separator: '|' }))
   .on('data', (row) => {
@@ -28,7 +31,6 @@ fs.createReadStream('./input/account_reason.csv')
       await singleBlock.run();
 
         for (i = 0; i < portfolioNumber_array.length ;i++){
-          // console.log(code_split_array[i], reason_split_array[i], portfolioNumber_array[i]);
           await singleBlock.block(code_split_array[i], reason_split_array[i], portfolioNumber_array[i]);
         }
     })();

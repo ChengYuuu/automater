@@ -2,7 +2,22 @@ const puppeteer = require('puppeteer');
 
 const BASE_URL = "http://localhost:3000"
 
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+const csvWriter = createCsvWriter({
+  path: './output/output.csv',
+  header: [
+    {id: 'portfolioNo', title: 'Portfolio #'},
+    {id: 'isDormantBlock', title: 'To be blocked as dormant'},
+    {id: 'maker', title: 'Maker'},
+    {id: 'existingBlock', title: 'Existing block?'},
+    {id: 'dateCompleted', title: 'Date Completed'},
+    {id: 'updateSuccess',title:'Update successful?'}
+  ]
+});
+
+
 const singleBlock = {
+
   browser: null,
   page: null,
 
@@ -14,18 +29,32 @@ const singleBlock = {
     await singleBlock.page.goto(BASE_URL, { waitUntil: 'networkidle0' });
   },
   block: async(blockCodes, remarks, portfolioNumber) => {
+    if(blockCodes.includes('81')){
+      var dormantBlock = "Yes";
+    } else {
+      var dormantBlock = "No";
+    }
     await singleBlock.page.waitFor('a[id=singleBlock]');
     let singleBlockLink = await singleBlock.page.$('a[id=singleBlock]');
     await singleBlockLink.click();
-    await singleBlock.page.waitFor('input[id=general-input');
-    await singleBlock.page.type('input[id=general-input', portfolioNumber);
+    await singleBlock.page.waitFor('input[id=general-input]');
+    await singleBlock.page.type('input[id=general-input]', portfolioNumber);
     await singleBlock.page.keyboard.press('Enter');
 
-    await singleBlock.blockRestrict(blockCodes);
+    var existingBlock = await singleBlock.blockRestrict(blockCodes);
     await singleBlock.blockRemark(remarks);
     let submitButton = await singleBlock.page.$('button[id=submit]');
     await submitButton.click();
-    await singleBlock.page.waitFor(1000);
+
+    await csvWriter.writeRecords([{
+      portfolioNo: portfolioNumber,
+      isDormantBlock: dormantBlock,
+      maker: 'Dinah Aw',
+      existingBlock: existingBlock,
+      dateCompleted:'8 Sep 2020',
+      updateSuccess:'Yes',
+
+    }])
     await singleBlock.goBackHome();
   },
   blockRestrict: async(blockCodes) => {
@@ -38,7 +67,15 @@ const singleBlock = {
       currentBlockCodes.push(parseInt(await singleBlock.page.evaluate(x => x.value, postingRestrictTextBox)));
       initialBlockLength += 1;
     }
-    if (currentBlockCodes.includes('81')) return;
+
+    console.log(currentBlockCodes);
+
+    if (currentBlockCodes.length > 0){
+      var existingBlock = "Yes";
+    } else {
+      var existingBlock = "No";
+    }
+    if (currentBlockCodes.includes('81')) return existingBlock;
     if (blockCodes.includes('81')) {
       await singleBlock.addBlockCodeBelow('81');
       await singleBlock.removeAllBlockCodeExceptLast();
@@ -56,6 +93,9 @@ const singleBlock = {
       }
       await singleBlock.removeBlockCode(initialBlockLength);
     }
+
+    return existingBlock;
+
   },
   blockRemark: async(remarks) => {
     await singleBlock.page.waitFor('span[id=remark-group]');
