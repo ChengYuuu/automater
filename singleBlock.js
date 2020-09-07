@@ -49,6 +49,7 @@ const singleBlock = {
     }
 
     console.log(dormantBlock);
+    await singleBlock.blockRemark(remarks);
 
     let submitButton = await singleBlock.page.$('button[id=submit]');
     await submitButton.click();
