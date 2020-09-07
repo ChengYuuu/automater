@@ -20,8 +20,16 @@ const singleBlock = {
     await singleBlock.page.waitFor('input[id=general-input');
     await singleBlock.page.type('input[id=general-input', portfolioNumber);
     await singleBlock.page.keyboard.press('Enter');
-    await singleBlock.blockRestrict(blockCode);
-    await singleBlock.blockRemark(remarks);
+
+    for (i = 0; i < blockCode.length ;i++){
+      console.log(blockCode[i]);
+      await singleBlock.blockRestrict(blockCode[i]);
+    }
+
+    for (i = 0; i < blockCode.length ;i++){
+      await singleBlock.blockRemark(remarks[i]);
+    }
+
     let submitButton = await singleBlock.page.$('button[id=submit]');
     await submitButton.click();
     await singleBlock.page.waitFor(1000);

@@ -1,4 +1,4 @@
-var reason_code_dict = {
+exports.reason_code_dict = {
     'Account Opening Docs Exceptions (Withdarawal & Trades Disallowed)': {'codes': '2,5,6,7,8,10',
     'reason_split': ['BLOCKED REASON: ACCOUNT OPENING',
     'DOCS EXCEPTIONS (WITHDARAWAL &',
@@ -255,15 +255,13 @@ var reason_code_dict = {
     'codes_split_len': 3}
 }
 
-var reason = 'Undocumented accounts / Accounts with expired W-series forms - No new purchase / transfer in US securities'
-
-console.log("Click this many times to add posting restricts: "+ reason_code_dict[reason].codes_split_len)
-for (let i = 0; i < reason_code_dict[reason].codes_split_len; i++) {
-    console.log(reason_code_dict[reason].codes_split[i])
-}
-console.log("Click this many times to add posting remarks: "+ reason_code_dict[reason].reason_split_len)
-for (let i = 0; i < reason_code_dict[reason].reason_split_len; i++) {
-    console.log(reason_code_dict[reason].reason_split[i])
-}
-
-
+// var reason = 'Undocumented accounts / Accounts with expired W-series forms - No new purchase / transfer in US securities'
+//
+// console.log("Click this many times to add posting restricts: "+ reason_code_dict[reason].codes_split_len)
+// for (let i = 0; i < reason_code_dict[reason].codes_split_len; i++) {
+//     console.log(reason_code_dict[reason].codes_split[i])
+// }
+// console.log("Click this many times to add posting remarks: "+ reason_code_dict[reason].reason_split_len)
+// for (let i = 0; i < reason_code_dict[reason].reason_split_len; i++) {
+//     console.log(reason_code_dict[reason].reason_split[i])
+// }
