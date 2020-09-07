@@ -47,9 +47,6 @@ const singleBlock = {
     } else {
       var dormantBlock = "No";
     }
-
-    console.log(dormantBlock);
-
     let submitButton = await singleBlock.page.$('button[id=submit]');
     await submitButton.click();
 
@@ -92,12 +89,11 @@ const singleBlock = {
         return index === self.indexOf(elem);
       })
       console.log(unique);
-      console.log(temp.length - blockCodes.length);
       unique.sort((a,b) => a-b);
       for (let i = 0; i < unique.length; i++) {
         await singleBlock.addBlockCodeBelow((unique[i]).toString());
       }
-      await singleBlock.removeBlockCode(temp.length - blockCodes.length);
+      await singleBlock.removeBlockCode(blockCodes.length);
     }
 
     return existingBlock;
@@ -123,8 +119,8 @@ const singleBlock = {
     }
   },
   removeBlockCode: async (amountToRemove) => {
-    for (let i = 0; i < amountToRemove; i++) {
-      let postingRestrictContainer = await singleBlock.page.$$('span[id=posting-restrict-group]');
+    let postingRestrictContainer = await singleBlock.page.$$('span[id=posting-restrict-group]');
+    for (let i = 0; i < postingRestrictContainer.length - amountToRemove; i++) {
       let removePostingRestrictButton = await postingRestrictContainer[0].$('button[id=minus]');
       await removePostingRestrictButton.click();
     }
