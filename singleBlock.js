@@ -2,7 +2,22 @@ const puppeteer = require('puppeteer');
 
 const BASE_URL = "http://localhost:3000"
 
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+const csvWriter = createCsvWriter({
+  path: './output/output.csv',
+  header: [
+    {id: 'portfolioNo', title: 'Portfolio #'},
+    {id: 'isDormantBlock', title: 'To be blocked as dormant'},
+    {id: 'maker', title: 'Maker'},
+    {id: 'existingBlock', title: 'Existing block?'},
+    {id: 'dateCompleted', title: 'Date Completed'},
+    {id: 'updateSuccess',title:'Update successful?'}
+  ]
+});
+
+
 const singleBlock = {
+
   browser: null,
   page: null,
 
@@ -14,24 +29,43 @@ const singleBlock = {
     await singleBlock.page.goto(BASE_URL, { waitUntil: 'networkidle0' });
   },
   block: async(blockCode, remarks, portfolioNumber) => {
+    if('81' in blockCode){
+      var dormantBlock = "Yes";
+    } else {
+      var dormantBlock = "No";
+    }
     await singleBlock.page.waitFor('a[id=singleBlock]');
     let singleBlockLink = await singleBlock.page.$('a[id=singleBlock]');
     await singleBlockLink.click();
-    await singleBlock.page.waitFor('input[id=general-input');
-    await singleBlock.page.type('input[id=general-input', portfolioNumber);
+    await singleBlock.page.waitFor('input[id=general-input]');
+    await singleBlock.page.type('input[id=general-input]', portfolioNumber);
     await singleBlock.page.keyboard.press('Enter');
 
     for (i = 0; i < blockCode.length ;i++){
-      console.log(blockCode[i]);
-      await singleBlock.blockRestrict(blockCode[i]);
+      if (i==0){
+        var existingBlock = await singleBlock.blockRestrict(blockCode[i]);
+      }
+      else{
+        await singleBlock.blockRestrict(blockCode[i]);
+      }
+
     }
 
-    for (i = 0; i < blockCode.length ;i++){
+    for (i = 0; i < remarks.length ;i++){
       await singleBlock.blockRemark(remarks[i]);
     }
 
     let submitButton = await singleBlock.page.$('button[id=submit]');
     await submitButton.click();
+    await csvWriter.writeRecords([{
+      portfolioNo: portfolioNumber,
+      isDormantBlock: dormantBlock,
+      maker: 'Dinah Aw',
+      existingBlock: existingBlock,
+      dateCompleted:'7 Sep 2020',
+      updateSuccess:'Yes',
+
+    }])
     await singleBlock.page.waitFor(1000);
     await singleBlock.goBackHome();
   },
@@ -43,7 +77,13 @@ const singleBlock = {
       let postingRestrictTextBox = await postingRestrictContainer[i].$('input[id=posting-restrict-value]');
       currentBlockCodes.push(parseInt(await singleBlock.page.evaluate(x => x.value, postingRestrictTextBox)));
     }
-    if (currentBlockCodes.includes('81')) return;
+
+    if (currentBlockCodes.length > 0){
+      var existingBlock = "Yes";
+    } else {
+      var existingBlock = "No";
+    }
+    if (currentBlockCodes.includes('81')) return existingBlock;
     if (blockCode === '81' || currentBlockCodes.length === 0) {
       await singleBlock.addBlockCodeBelow(blockCode);
       await singleBlock.removeAllBlockCodeExceptLast();
@@ -53,12 +93,15 @@ const singleBlock = {
         return index === self.indexOf(elem);
       })
       unique.sort((a,b) => a-b);
-      console.log(unique);
+      // console.log(uniques);
       for (let i = 0; i < unique.length; i++) {
         await singleBlock.addBlockCodeBelow((unique[i]).toString());
       }
       await singleBlock.removeBlockCode(currentBlockCodes.length - 1);
     }
+
+    return existingBlock;
+
   },
   blockRemark: async(remarks) => {
     await singleBlock.page.waitFor('span[id=remark-group]');

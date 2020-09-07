@@ -8,6 +8,9 @@ const reason_split_array = [];
 const code_split_array = [];
 const portfolioNumber_array = [];
 
+
+
+var success = true;
 fs.createReadStream('./input/account_reason.csv')
   .pipe(csv({ separator: '|' }))
   .on('data', (row) => {
@@ -31,15 +34,16 @@ fs.createReadStream('./input/account_reason.csv')
     console.log('CSV file successfully processed');
     // console.log(reason_split_array[0]);
     // console.log(code_split_array[0]);
-    // console.log(portfolioNumber_array);
+    console.log(portfolioNumber_array);
     (async () => {
       await singleBlock.initialize();
       await singleBlock.page.waitFor(1000);
       await singleBlock.run();
 
         for (i = 0; i < portfolioNumber_array.length ;i++){
-          // console.log(code_split_array[i], reason_split_array[i], portfolioNumber_array[i]);
+          await console.log(code_split_array[i]);
           await singleBlock.block(code_split_array[i], reason_split_array[i], portfolioNumber_array[i]);
+
         }
     })();
   });
