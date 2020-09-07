@@ -59,13 +59,11 @@ const singleBlock = {
   },
   blockRestrict: async(blockCodes) => {
     const currentBlockCodes = [];
-    var initialBlockLength = 0;
     await singleBlock.page.waitFor('span[id=posting-restrict-group]');
     let postingRestrictContainer = await singleBlock.page.$$('span[id=posting-restrict-group]');
     for (let i = 0; i < postingRestrictContainer.length; i++) {
       let postingRestrictTextBox = await postingRestrictContainer[i].$('input[id=posting-restrict-value]');
       currentBlockCodes.push(parseInt(await singleBlock.page.evaluate(x => x.value, postingRestrictTextBox)));
-      initialBlockLength += 1;
     }
 
     console.log(currentBlockCodes);
@@ -86,12 +84,12 @@ const singleBlock = {
       var unique = currentBlockCodes.filter(function(elem, index, self) {
         return index === self.indexOf(elem);
       })
-      unique.sort((a,b) => a-b);
       console.log(unique);
+      unique.sort((a,b) => a-b);
       for (let i = 0; i < unique.length; i++) {
         await singleBlock.addBlockCodeBelow((unique[i]).toString());
       }
-      await singleBlock.removeBlockCode(initialBlockLength);
+      await singleBlock.removeBlockCode(currentBlockCodes.length - blockCodes.length);
     }
 
     return existingBlock;
@@ -150,10 +148,17 @@ const singleBlock = {
   addRemarkBelow: async (remarks) => {
     let remarkContainer = await singleBlock.page.$$('span[id=remark-group]');
     let addRemarkButton = await remarkContainer[0].$('button[id=plus]');
-    await addRemarkButton.click();
+    for (let i = 0; i < remarks.length; i++) {
+      await addRemarkButton.click();
+    }
     let updatedRemarkContainer = await singleBlock.page.$$('span[id=remark-group]');
-    let updatedRemarkTextBox = await updatedRemarkContainer[updatedRemarkContainer.length - 1].$('textarea[id=remark-value]');
-    await updatedRemarkTextBox.type(remarks);
+    for (let i = 0; i < remarks.length; i++) {
+      let updatedRemarkTextBox = await updatedRemarkContainer[updatedRemarkContainer.length - 1 - i].$('textarea[id=remark-value]');
+      await updatedRemarkTextBox.click({ clickCount: 3 });
+      await updatedRemarkTextBox.press('Backspace');
+      let rm = currentRemarks[remarks.length - 1 - i];
+      await updatedRemarkTextBox.type(rm);
+    }
   },
   goBackHome: async () => {
     let homeLink = await singleBlock.page.$('a[id=home]');
