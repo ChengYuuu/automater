@@ -29,11 +29,11 @@ const singleBlock = {
     await singleBlock.page.goto(BASE_URL, { waitUntil: 'networkidle0' });
   },
   block: async(blockCodes, remarks, portfolioNumber) => {
-    if(blockCodes.includes('81')){
-      var dormantBlock = "Yes";
-    } else {
-      var dormantBlock = "No";
-    }
+    // if(blockCodes.includes('81')){
+    //   var dormantBlock = "Yes";
+    // } else {
+    //   var dormantBlock = "No";
+    // }
     await singleBlock.page.waitFor('a[id=singleBlock]');
     let singleBlockLink = await singleBlock.page.$('a[id=singleBlock]');
     await singleBlockLink.click();
@@ -42,16 +42,19 @@ const singleBlock = {
     await singleBlock.page.keyboard.press('Enter');
 
     var existingBlock = await singleBlock.blockRestrict(blockCodes);
-    await singleBlock.blockRemark(remarks);
-
+    
+    // enter dates
     await singleBlock.selectReviewDate();
-
     if(blockCodes.includes('81')){
+      console.log('block code includes 81');
       singleBlock.selectDormantDate();
       var dormantBlock = "Yes";
     } else {
       var dormantBlock = "No";
     }
+
+    await singleBlock.blockRemark(remarks);
+
 
     let submitButton = await singleBlock.page.$('button[id=submit]');
     await submitButton.click();
@@ -176,27 +179,33 @@ const singleBlock = {
   },
   selectReviewDate: async () => {
     let reviewDatePicker = await singleBlock.page.$('input[id=review-datepicker');
-    await reviewDatePicker.click();
-    await singleBlock.page.waitFor(1000);
-    let dates = await singleBlock.page.$$('table[class=ant-picker-content] td.ant-picker-cell.ant-picker-cell-in-view');
-    for (let i = 0; i < dates.length; i++) {
-      let day = await dates[i].evaluate(el => el.innerText);
-      if (day == "8") {
-        singleBlock.page.evaluate(el => el.click(), dates[i])
-      }
-    }
+    await reviewDatePicker.click({ clickCount: 3 });
+    await reviewDatePicker.press('Backspace');
+    await reviewDatePicker.type('08 Sep 2020');
+
+    // await singleBlock.page.waitFor(1000);
+    // let dates = await singleBlock.page.$$('table[class=ant-picker-content] td.ant-picker-cell.ant-picker-cell-in-view');
+    // for (let i = 0; i < dates.length; i++) {
+    //   let day = await dates[i].evaluate(el => el.innerText);
+    //   if (day == "8") {
+    //     singleBlock.page.evaluate(el => el.click(), dates[i])
+    //   }
+    // }
   },
   selectDormantDate: async () => {
     let reviewDatePicker = await singleBlock.page.$('input[id=dormant-datepicker');
-    await reviewDatePicker.click();
-    await singleBlock.page.waitFor(1000);
-    let dates = await singleBlock.page.$$('table[class=ant-picker-content] td.ant-picker-cell.ant-picker-cell-in-view');
-    for (let i = 0; i < dates.length; i++) {
-      let day = await dates[i].evaluate(el => el.innerText);
-      if (day == "8") {
-        singleBlock.page.evaluate(el => el.click(), dates[i])
-      }
-    }
+    await reviewDatePicker.click({ clickCount: 3 });
+    await reviewDatePicker.press('Backspace');
+    await reviewDatePicker.type('08 Sep 2020');
+
+    // await singleBlock.page.waitFor(1000);
+    // let dates = await singleBlock.page.$$('table[class=ant-picker-content] td.ant-picker-cell.ant-picker-cell-in-view');
+    // for (let i = 0; i < dates.length; i++) {
+    //   let day = await dates[i].evaluate(el => el.innerText);
+    //   if (day == "8") {
+    //     singleBlock.page.evaluate(el => el.click(), dates[i])
+    //   }
+    // }
   }
 }
 
