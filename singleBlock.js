@@ -42,13 +42,12 @@ const singleBlock = {
     await singleBlock.selectReviewDate();
     if(blockCodes.includes('81')){
       console.log('block code includes 81');
-      singleBlock.selectDormantDate();
+      await singleBlock.selectDormantDate();
       var dormantBlock = "Yes";
     } else {
       var dormantBlock = "No";
     }
 
-    console.log(dormantBlock);
     await singleBlock.blockRemark(remarks);
 
     let submitButton = await singleBlock.page.$('button[id=submit]');
